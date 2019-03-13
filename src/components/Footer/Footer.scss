@@ -1,0 +1,19 @@
+@import '../../styles/app';
+
+.root {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: $font-size-small -1;
+}
+
+.container {
+  margin: 0 auto;
+  padding: 7px $content-padding-horizontal;
+}
+
+.spacer {
+  display: inline-block;
+  padding: 0 5px;
+}
