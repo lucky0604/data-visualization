@@ -23,3 +23,70 @@ export function receiveLogin(user) {
     id_token: user.id_token
   }
 }
+
+function loginError(message) {
+  return {
+    type: LOGIN_FAILURE,
+    isFetching: false,
+    isAuthenticated: false,
+    message
+  }
+}
+
+function requestLogout() {
+  return {
+    type: LOGOUT_REQUEST,
+    isFetching: true,
+    isAuthenticated: true
+  }
+}
+
+export function receiveLogout() {
+  return {
+    type: LOGOUT_SUCCESS,
+    isFetching: false,
+    isAuthenticated: false
+  }
+}
+
+// Logs the user out
+export function logoutUser() {
+  return dispatch => {
+    dispatch(requestLogout())
+    localStorage.removeItem('id_token')
+    document.cookie = 'id_token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+    dispatch(receivLogout())
+  }
+}
+
+export function loginUser(creds) {
+  const config = {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    credentials: 'include',
+    body: `login=${creds.login}&password=${creads.password}`
+  }
+
+  return dispatch => {
+    // dispatch requestLogin to kickoff the call to the API
+    dispatch(requestLogin(creds))
+
+    return fetch('/login', config)
+      .then(res => res.json().then(user => ({user, res})))
+      .then(({user, res}) => {
+        if (!res.ok) {
+          // if there was a problem, we want to dispatch the error condition
+          dispatch(loginError(user.message))
+          return Promise.reject(user)
+        }
+
+        // in posts create new action and check http status, if logout
+        // if login was successful, set the token in local storage
+        localStorage.setItem('id_token', user.id_token)
+        // dispatch the success action
+        dispatch(receiveLogin(user))
+        return Promise.resolve(user)
+      })
+      .catch(err => console.error('Error: ', err))
+  }
+}
